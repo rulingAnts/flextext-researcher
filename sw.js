@@ -10,7 +10,7 @@
  * engine list IDENTICAL to the editor's sw.js (app.js resolves its whole static
  * import graph at load, even though the panel uses only part of it). */
 
-const VERSION = 'v10';
+const VERSION = 'v11';
 const CACHE = 'flextext-researcher-' + VERSION;
 const SHELL = [
   './',
@@ -68,8 +68,10 @@ self.addEventListener('install', (e) => {
 });
 
 function cleanupOldCaches() {
-  return caches.keys()
-    .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))));
+  // Scope to THIS app's OWN caches only ('flextext-researcher-*'). Three PWAs share one origin/CacheStorage,
+  // so an unscoped `k !== CACHE` would delete the editor's + recorder's complete caches and brick them offline.
+  return caches.keys().then(keys => Promise.all(
+    keys.filter(k => k !== CACHE && k.startsWith('flextext-researcher-')).map(k => caches.delete(k))));
 }
 
 self.addEventListener('message', (e) => {
