@@ -10,7 +10,7 @@
  * engine list IDENTICAL to the editor's sw.js (app.js resolves its whole static
  * import graph at load, even though the panel uses only part of it). */
 
-const VERSION = 'v12';
+const VERSION = 'v13';
 const CACHE = 'flextext-researcher-' + VERSION;
 const SHELL = [
   './',
@@ -44,6 +44,7 @@ const SHELL = [
   '/flextext-editor/js/vendor/lame.min.js',
   '/flextext-editor/js/vendor/libflac.min.wasm.js',
   '/flextext-editor/js/vendor/libflac.min.wasm.wasm',
+  '/flextext-editor/help/ws-flex-codes.png',   // FLEx writing-systems help screenshot (panel Utilities) — offline
 ];
 
 // Per-file fetch with retries (resilient on flaky networks), then cache.put — STILL atomic: any file
