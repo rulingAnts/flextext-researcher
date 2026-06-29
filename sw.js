@@ -46,8 +46,25 @@ const SHELL = [
   '/flextext-editor/js/vendor/libflac.min.wasm.wasm',
 ];
 
+// Per-file fetch with retries (resilient on flaky networks), then cache.put — STILL atomic: any file
+// ultimately failing throws, so install never completes and the old version keeps serving. Retried on
+// the next update check. (Matches the editor SW.)
+async function precacheAll(cache, urls) {
+  for (const url of urls) {
+    let cached = false, lastErr;
+    for (let attempt = 0; attempt < 3 && !cached; attempt++) {
+      try {
+        const resp = await fetch(url, { cache: 'reload' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status + ' ' + url);
+        await cache.put(url, resp);
+        cached = true;
+      } catch (err) { lastErr = err; if (attempt < 2) await new Promise(r => setTimeout(r, 500 * (attempt + 1))); }
+    }
+    if (!cached) throw lastErr || new Error('precache failed: ' + url);
+  }
+}
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)));
+  e.waitUntil(caches.open(CACHE).then(c => precacheAll(c, SHELL)));
 });
 
 function cleanupOldCaches() {
