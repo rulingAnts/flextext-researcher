@@ -10,7 +10,7 @@
  * engine list IDENTICAL to the editor's sw.js (app.js resolves its whole static
  * import graph at load, even though the panel uses only part of it). */
 
-const VERSION = 'v46';
+const VERSION = 'v47';
 const CACHE = 'flextext-researcher-' + VERSION;
 const SHELL = [
   './',
@@ -30,6 +30,10 @@ const SHELL = [
   '/flextext-editor/js/convert.js',
   '/flextext-editor/js/zip.js',
   '/flextext-editor/js/upload.js',
+  // native-audio.js is a TOP-LEVEL import of app.js (the Android native bridge; inert in a
+  // browser). It MUST be precached or this app is dead offline — a missing static import
+  // stops the whole module graph from loading.
+  '/flextext-editor/js/native-audio.js',
   '/flextext-editor/js/record-pcm.js',
   '/flextext-editor/js/audio-capture-worklet.js',
   '/flextext-editor/js/flac.js',
