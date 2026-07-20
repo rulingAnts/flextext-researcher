@@ -103,3 +103,22 @@ Git LFS; publish private Packages; or change the plan / budgets. The local
 `.git/hooks/pre-push` blocks workflow pushes (override `ALLOW_WORKFLOW_PUSH=1`) and
 production-branch pushes (`ALLOW_MAIN_PUSH=1`) — set those flags only after Seth approves
 that specific push.
+
+## 🚨 NEVER push this repo before the editor is LIVE
+
+This app's `sw.js` precaches engine files from the editor **by path**. If you push while those
+files aren't live yet, `precacheAll()` throws inside `install`'s `waitUntil` and **the service
+worker fails to install**: existing installs stick on the old worker, and **new installs get no
+precached shell at all — offline support silently gone.**
+
+That is not hypothetical. It happened 2026-07-20: editor v108 added `js/native-audio.js`, this
+repo was pushed while that editor commit was still on `main`, and `/flextext-editor/js/native-audio.js`
+404'd in production.
+
+**Enforcement:** `./check-editor-shell.sh` verifies every `/flextext-editor/...` SHELL path returns
+200 on the live site, and it is wired into `.git/hooks/pre-push` so a premature push is blocked.
+Hooks are **not** versioned by git — **reinstall the hook after any re-clone** (the script is
+committed; the hook just calls it). Override only with cause: `ALLOW_STALE_SHELL=1 git push ...`.
+
+**Correct order:** editor `main` → editor `productionWeb` (Seth's sign-off) → confirm live (curl the
+new path → 200) → *then* bump this repo's `sw.js` VERSION and push.
