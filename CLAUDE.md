@@ -7,6 +7,29 @@ the researcher's own tool (not a field-worker app). It is a **thin companion** t
 **Flextext Editor**, which is the **main project** — a separate, independent Git repo
 at `rulingAnts/flextext-editor` (local: `/Users/Seth/GIT/flextext editor/`).
 
+## ⚠ On GitHub Pages this app is RETIRING (2026-08-17)
+
+`https://rulingants.github.io/flextext-researcher/` now **redirects to
+<https://research.flextext.app/>**, and its service worker is a kill switch there: it unregisters
+itself, drops its own caches, and navigates any open window across on the first launch after the
+update, so the handover is invisible to the user. Query string and fragment ride along (an OAuth
+return arrives as `#gauth=…`).
+
+**Both files are HOSTNAME-GATED, and that is load-bearing.** `apps/researcher/build.sh` copies this
+whole folder into the Cloudflare deployment, so the same `index.html` and `sw.js` also serve
+`research.flextext.app`. Unconditional versions would make that site redirect to itself forever and
+lose its offline support. On any non-`rulingants.github.io` host both guards are inert.
+
+⚠ **The kill switch deletes ONLY `flextext-researcher-*` caches.** Three PWAs share one origin and
+one CacheStorage on Pages; the broad "delete everything that is not mine" filter used by
+`paragraph-analysis/shell.js` would wipe the EDITOR's and RECORDER's caches and brick a field device
+offline. It also never touches localStorage or IndexedDB, which are per-origin and therefore shared.
+`test/researcher-legacy-redirect.test.mjs` executes both guards under each hostname and asserts the
+sibling caches survive.
+
+The Cloudflare app is unaffected and remains the real researcher console; everything below still
+describes it.
+
 ## The one thing to understand: this is a SHELL, not a fork
 
 `index.html` here is a thin shell. It loads the **editor's engine** cross-path over
@@ -43,6 +66,25 @@ would change its PWA `id` and **orphan every installed copy in the field**.
 **Whenever the editor engine changes in a way this app should pick up, bump
 `VERSION` in `sw.js` here** — otherwise installed copies keep serving a **stale
 cached engine** offline.
+
+### ⚠ The panel is ONLINE-ONLY — but that does NOT let you trim the SHELL
+
+Established 2026-08-17. Realistically nothing in the researcher console works without the network:
+`renderDashboard` does `data = await Researcher.listView(); catch { return; }` — a failed fetch
+renders NOTHING and waits for the next poll, there is no cached view, and assignments, commands,
+settings, invites, Drive and crowd management are all worker round-trips. The ONE exception is the
+Utilities modal, whose own intro string says so: *"Offline tools you can use any time — they run in
+your browser; nothing is uploaded"* — the audio format converter, the FLEx writing-systems tool and
+the interlinear-file exporter, plus the local-only assignment TTL and the erase button.
+
+So this is an **online console with an offline toolbox attached**, not an offline-capable app.
+
+⚠ **The trap that follows, and the reason this note exists:** it is tempting to conclude that the
+SHELL can therefore be trimmed to the handful of modules the toolbox needs. It cannot. `app.js` is
+loaded as a `type="module"`, so the browser resolves EVERY top-level import at load time whether the
+panel calls it or not — a single missing one stops the whole graph and the app is dead offline (the
+v108 outage). The SHELL is sized by app.js's IMPORT GRAPH, not by what the panel uses. Shrinking it
+requires shrinking app.js's imports, which is an engine change, not a satellite one.
 
 ### ⚠ Also keep the SHELL precache list in sync with `app.js`'s import graph
 Bumping `VERSION` is **not enough on its own**. The editor's `js/app.js` is loaded
