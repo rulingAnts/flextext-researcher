@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Flextext Researcher</title>
 <meta name="description" content="Set up and manage your coworkers' Flextext devices, send tasks, and review what they collect. Works offline.">
 <meta name="theme-color" content="#0f766e">
@@ -54,7 +54,7 @@
        detection, so this same file ships to production unchanged. -->
   <script>
     if (/\.(pages|workers)\.dev$/.test(location.hostname)) {
-      document.write('<div style="position:sticky;top:0;z-index:9999;background:repeating-linear-gradient(45deg,#b45309,#b45309 12px,#92400e 12px,#92400e 24px);color:#fff;text-align:center;font:600 13px/1.5 system-ui;padding:4px 8px;">STAGING — test site \u00b7 situs uji — not production / bukan produksi</div>');
+      document.write('<div id="fx-staging" style="position:sticky;top:0;z-index:9999;background:repeating-linear-gradient(45deg,#b45309,#b45309 12px,#92400e 12px,#92400e 24px);color:#fff;text-align:center;font:600 13px/1.5 system-ui;padding:4px 8px;">STAGING \u2014 test site \u00b7 situs uji \u2014 not production / bukan produksi</div>');
     }
   </script>
 
